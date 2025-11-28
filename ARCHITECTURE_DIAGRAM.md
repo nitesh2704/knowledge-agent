@@ -1,5 +1,127 @@
 # KNOWLEDGE BASE RAG AGENT - ARCHITECTURE DIAGRAM
 
+Below are Mermaid diagrams that you can view natively on GitHub. They complement the ASCII diagram and focus on the end‑to‑end flow, detailed sequences, and deployment view.
+
+## System Overview
+
+```mermaid
+flowchart LR
+        U[User (Browser)] -->|HTTP| S[Streamlit UI\napp.py]
+        subgraph Indexing
+                S -->|Upload| X[Extract Text\n(pdfplumber / python-docx / txt)]
+                X --> Ck[Chunking\nCHUNK_SIZE & OVERLAP]
+                Ck --> E((Embeddings))
+                E -->|gemini text-embedding-004| G1[(Gemini Embedding API)]
+                E -->|Vectors| DB[(ChromaDB\nPersistentClient)]
+        end
+
+        subgraph Retrieval+Generation
+                S --> Q[User Question]
+                Q --> QE[Query Embedding]
+                QE -->|gemini text-embedding-004| G1
+                QE --> DB
+                DB --> R[Top-K Relevant Chunks]
+                R --> P[Prompt Assembly\n(system + sources + question)]
+                P -->|gemini 2.0 flash| G2[(Gemini Chat API)]
+                G2 --> A[Answer]
+                A --> S
+        end
+
+        subgraph Config
+                Env[[.env\nGEMINI_API_KEY]]
+                Vars[[Env overrides\nCHUNK_SIZE\nCHUNK_OVERLAP\nEMBED_WORKERS]]
+        end
+        Env -.-> S
+        Vars -.-> S
+```
+
+## Sequence: Document Ingestion
+
+```mermaid
+sequenceDiagram
+        autonumber
+        participant U as User
+        participant S as Streamlit UI (app.py)
+        participant EX as Extractors (utils.py)
+        participant CK as Chunker (utils.py)
+        participant EM as Embeddings (utils.gemini_embed)
+        participant DB as ChromaDB (kb_collection)
+        participant G1 as Gemini Embedding API
+
+        U->>S: Upload PDF/DOCX/TXT
+        S->>EX: load_text_from_file()
+        EX-->>S: raw text
+        S->>CK: split_text(text, size, overlap)
+        CK-->>S: chunks[]
+        par parallel workers (EMBED_WORKERS)
+                S->>EM: gemini_embed(chunks)
+                EM->>G1: embedContent(text)
+                G1-->>EM: 768-d vector
+        end
+        EM-->>S: embeddings[][]
+        S->>DB: collection.add(ids, embeddings, documents, metadatas)
+        DB-->>S: ack
+        S-->>U: Indexed summary (chunks added)
+```
+
+## Sequence: Question Answering
+
+```mermaid
+sequenceDiagram
+        autonumber
+        participant U as User
+        participant S as Streamlit UI (app.py)
+        participant EM as Embedding (utils.gemini_embed)
+        participant DB as ChromaDB
+        participant P as Prompt Builder
+        participant G2 as Gemini Chat API
+
+        U->>S: Ask question
+        S->>EM: gemini_embed([question])
+        EM-->>S: query vector
+        S->>DB: collection.query(query_vector, TOP_K)
+        DB-->>S: documents, metadatas, distances
+        S->>S: filter by thresholds (distance <= 0.8, sim >= 0.6)
+        S->>P: assemble system + top sources + question
+        P-->>S: prompt text
+        S->>G2: generateContent(prompt)
+        G2-->>S: answer text
+        S-->>U: render answer card
+```
+
+## Deployment / Container View (C4‑style)
+
+```mermaid
+graph TD
+        subgraph Client
+                B[Web Browser]
+        end
+
+        subgraph App VM/Host
+                ST[Streamlit App\napp.py]
+                UT[Utilities\nutils.py]
+                ING[Ingestion\ningest.py]
+                DB[(ChromaDB\n./chroma_db)]
+                ENV[[.env]]
+        end
+
+        subgraph Google APIs
+                EAPI[Gemini Embedding API]
+                CAPI[Gemini Chat API]
+        end
+
+        B -->|HTTP 8501| ST
+        ST --> UT
+        ST --> ING
+        UT --> EAPI
+        UT --> CAPI
+        ST --> DB
+        ING --> DB
+        ENV -.-> ST
+        ENV -.-> UT
+```
+
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         USER INTERACTION LAYER                              │
