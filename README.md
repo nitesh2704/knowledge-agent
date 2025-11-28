@@ -24,72 +24,52 @@ A production-ready Retrieval-Augmented Generation (RAG) system that enables natu
 - ✅ **Robust Error Handling**: Automatic retry with exponential backoff
 - ✅ **Production Ready**: Comprehensive testing and diagnostic tools
 
-## 🛠️ Tech Stack & APIs
+# Knowledge Base Agent
 
-**Core Technologies:**
-- **Frontend**: Streamlit 1.51.0 (Python web framework)
-- **Vector Database**: ChromaDB 1.3.5 (persistent local storage)
-- **Embeddings API**: Google Gemini text-embedding-004 (768 dimensions)
-- **LLM API**: Google Gemini 2.0 Flash (chat completion)
-- **Document Processing**: pdfplumber, python-docx
+## Overview
+This project is a Knowledge Base Agent that answers questions using your uploaded documents. It performs retrieval-augmented generation (RAG): relevant text chunks are retrieved from a local vector store and used to generate a grounded answer with the Gemini API, presented in a clean Streamlit UI.
 
-**Architecture Pattern**: RAG (Retrieval-Augmented Generation)
-- Combines semantic search with LLM generation
-- Source attribution prevents hallucination
-- Modular design allows easy provider swapping
+## Features & Limitations
+- Features: multi-format ingestion (PDF, DOCX, TXT); local persistent vector store; fast retrieval; concise answers grounded in retrieved context; upload-and-index from the UI; ability to clear/reset database; performance-tuned chunking and parallel embeddings.
+- Limitations: quality depends on the uploaded documents; requires a Gemini API key and internet access; very large PDFs may take time to parse; retrieval is local (no cloud sync) unless configured; rate limits may apply with high parallelism.
 
-## 📋 Requirements
+## Tech Stack & APIs Used
+- Python, Streamlit (UI)
+- ChromaDB (vector database)
+- Google Gemini API: `text-embedding-004` (embeddings), `gemini-2.0-flash` (generation)
+- Parsing: `pdfplumber` (PDF), `python-docx` (DOCX)
 
-- Python 3.10 or higher
-- Gemini API key from Google AI Studio ([Get one free](https://aistudio.google.com/app/apikey))
-- Supported OS: Windows, Linux, macOS
-- ~100MB disk space for dependencies
-- ~10MB per 1000 document chunks for vector storage
+## Setup & Run Instructions
+Prerequisites: Python 3.10+, a Google Gemini API key.
 
-## 🚀 Quick Start
-
-### 1. Setup Environment
-
-```powershell
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-.\venv\Scripts\Activate.ps1
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 2. Configure API Key
-
-Create a `.env` file in the project root:
-
-```bash
-GEMINI_API_KEY=AIzaSyB9bc6sl9z6zYfj0QK5aM1H-lN5fQde-R8
-```
-
-Or set it as an environment variable:
-
-```powershell
-$env:GEMINI_API_KEY="AIzaSyB9bc6sl9z6zYfj0QK5aM1H-lN5fQde-R8"
-```
-
+1) Clone and enter the project directory.
+2) Create and activate a virtual environment, then install dependencies:
 ### 3. Prepare Documents
 
 Create a `docs/` folder and add your documents:
 
 ```powershell
+3) Create `.env` with your key:
 mkdir docs
 # Copy your PDF, DOCX, or TXT files to the docs/ folder
 ```
+4) Optional performance tuning via env (defaults are reasonable):
 
 ### 4. Index Documents
 
 Run the ingestion script to process and index your documents:
+5) Run the app:
 
 ```powershell
 # Index all files in docs/ folder
+Use the left panel to upload files and index them, then ask questions from the main panel.
+
+## Potential Improvements
+- Streaming responses and background ingestion queue
+- OCR for scanned PDFs and image-heavy documents
+- Toggle for showing/hiding source snippets and similarity scores
+- Centralized cloud vector store option and multi-user sessions
+- Evaluation suite (faithfulness, answer quality, retrieval recall) and auto-tuning
 python ingest.py
 
 # Or index a single file
