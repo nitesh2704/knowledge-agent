@@ -1,0 +1,18 @@
+Gradient Descent Algorithm
+
+Gradient descent is an optimization algorithm used to minimize a function by iteratively moving toward the steepest descent direction. It is widely used in machine learning to train models.
+
+Key Concepts:
+- Loss Function: Measures how well the model performs
+- Learning Rate: Controls step size in parameter updates
+- Convergence: When the algorithm reaches a minimum
+
+Types:
+1. Batch Gradient Descent: Uses entire dataset
+2. Stochastic Gradient Descent (SGD): Uses one sample at a time
+3. Mini-batch Gradient Descent: Uses small batches of data
+
+Applications:
+- Neural network training
+- Linear regression optimization
+- Logistic regression parameter tuning
