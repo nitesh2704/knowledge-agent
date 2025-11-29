@@ -4,7 +4,7 @@ A production-ready Retrieval-Augmented Generation (RAG) system that enables natu
 
 ## 📺 Demo
 
-**Live Demo**: `streamlit run app.py` (runs on http://localhost:8501)
+**Live Demo**: [`streamlit run app.py` (https://knowledge-agent-1.streamlit.app/)]
 
 **Quick Demo GIF**: See how it works in 30 seconds
 1. Upload documents (PDF/DOCX/TXT)
