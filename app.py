@@ -105,10 +105,15 @@ def load_chroma_collection():
     """Load the ChromaDB collection. Cached to avoid reloading."""
     try:
         client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
-        collection = client.get_collection(name=COLLECTION_NAME)
+        try:
+            collection = client.get_collection(name=COLLECTION_NAME)
+        except Exception:
+            # Create collection if it doesn't exist (first run on Streamlit Cloud)
+            collection = client.create_collection(name=COLLECTION_NAME)
+            logger.info(f"Created new ChromaDB collection: {COLLECTION_NAME}")
         return collection
     except Exception as e:
-        logger.error(f"Error loading collection: {e}")
+        logger.error(f"Error loading or creating collection: {e}")
         return None
 
 
